@@ -274,6 +274,51 @@ class Robinhood:
         data = self.quote_data(stock)
         return data["symbol"]
 
+    def get_historical_quote(
+            self,
+            stock,
+            interval,
+            span,
+            bounds=Bounds.REGULAR
+        ):
+        """fetch historical data for stock
+
+        Note: valid interval/span configs
+            interval = 5minute | 10minute + span = day, week
+            interval = day + span = year
+            interval = week
+            TODO: NEEDS TESTS
+
+        Args:
+            stock (str): stock ticker
+            interval (str): resolution of data
+            span (str): length of data
+            bounds (:enum:`Bounds`, optional): 'extended' or 'regular' trading hours
+
+        Returns:
+            (:obj:`dict`) values returned from `historicals` endpoint
+
+        """
+        if isinstance(bounds, str): #recast to Enum
+            bounds = Bounds(bounds)
+
+        url = None
+        if stock.find(',') == -1:
+            url = str(self.endpoints['quotes']) + str(stock) + "/"
+        else:
+            url = str(self.endpoints['quotes']) + "?symbols=" + str(stock)
+
+        params = {
+            'interval': interval,
+            'span': span,
+            'bounds': bounds.name.lower()
+        }
+        res = self.session.get(
+            url,
+            params=params
+        )
+        return res.json()
+
     def get_historical_quotes(
             self,
             stock,
